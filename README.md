@@ -1,27 +1,21 @@
 # Dictation
 
-A local speech-to-text dictation system for the host PC (running Linux/Hyprland) and the Dixie Ball hardware.
+A local, hotkey-driven speech-to-text dictation system for Linux (Hyprland).
 
 ## Architecture
 
-This project provides two entry points for speech-to-text dictation into your active window:
+This project provides a low-latency, hands-free dictation workflow to type spoken words directly into your active window:
 
-1. **PC-level Dictation (F4 key)**:
-   - Captures audio from your PC mic/webcam using `pw-record` (PipeWire).
-   - Sends the audio to the local `wyoming-faster-whisper` server on port `10300`.
-   - Injects the transcribed text as physical keystrokes into the active window using `wtype`.
-   - Bound to the `F4` key in Hyprland.
-
-2. **Dixie Ball Keyboard Emulation (Wyoming Server)**:
-   - Run `dixie_dictate.py` which hosts a Wyoming server on port `10400`.
-   - When the Dixie Ball voice terminal sends dictation audio to port `10400`, `dixie_dictate.py` proxies it to Whisper (port `10300`) and uses `wtype` to type it on the PC.
+- **Audio Capture**: Uses `pw-record` (PipeWire) to capture audio from your PC microphone/webcam.
+- **Transcription**: Streams the audio to a local `wyoming-faster-whisper` server (defaulting to port `10300`) for near-instant transcription using a local Whisper model.
+- **Text Injection**: Uses `wtype` to physically inject the transcribed text as keystrokes into the active window on your desktop.
+- **Hotkey Integration**: Typically bound to the `F4` key natively in Hyprland.
 
 ---
 
 ## Files
 
-- [dictate.py](file:///home/fuad/OCProjects/dictation/dictate.py): The desktop keybind recording and transcription script.
-- [services/dixie_dictate.py](file:///home/fuad/OCProjects/dictation/services/dixie_dictate.py): The Wyoming server to accept audio from the Dixie Ball voice terminal and type it out.
+- [dictate.py](dictate.py): The desktop keybind recording and transcription script.
 
 ---
 
@@ -33,8 +27,9 @@ Add the following line to your `~/.config/hypr/hyprland.conf`:
 bind = , F4, exec, /home/fuad/OCProjects/dictation/dictate.py
 ```
 
-### 2. Run the Dixie Ball Dictation Server (Optional)
-To run the Wyoming proxy server:
-```bash
-python3 /home/fuad/OCProjects/dictation/services/dixie_dictate.py --port 10400 --whisper-port 10300
-```
+### 2. Dependencies
+Ensure you have the following installed on your host:
+* `wtype` (for typing text into Wayland windows)
+* `pipewire` / `wireplumber` (for `pw-record`)
+* `libnotify` (for `notify-send` visual notifications)
+* A running `wyoming-faster-whisper` server on port `10300`.
